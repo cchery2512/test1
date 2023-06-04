@@ -3,7 +3,6 @@
 
 namespace App\Entity;
 use App\Repository\CurrencyRateRepository;
-use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CurrencyRateRepository::class)]
@@ -23,15 +22,12 @@ class CurrencyRate{
     #[ORM\Column]
     private ?float $rate = null;
 
-    #[ORM\Column]
-    protected DateTime $deletedAt;
-
     // Getters and setters
     public function getId(): ?int{
         return $this->id;
     }
 
-    public function getBaseCurrency(): ?int{
+    public function getBaseCurrency(): ?string{
         return $this->baseCurrency;
     }
 

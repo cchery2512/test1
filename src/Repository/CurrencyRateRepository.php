@@ -36,11 +36,27 @@ class CurrencyRateRepository extends ServiceEntityRepository{
         }
     }
 
+    /**
+     * @return CurrencyRate[] Returns an array of CurrencyRate objects
+     */
+    public function findByParams($param): ?array{
+        return $this->createQueryBuilder('cr')
+        ->andWhere('cr.baseCurrency = :baseCurrency')
+        ->setParameter('baseCurrency', $param['base_currency'])
+        ->andWhere('cr.targetCurrency IN (:targetCurrencies)')
+        ->setParameter('targetCurrencies', $param['target_currencies'])
+        ->getQuery()
+        ->getResult();
+    }
+
+    /*public function find(): array{
+        return $this->createQueryBuilder();
+    }*/
+
 //    /**
 //     * @return CurrencyRate[] Returns an array of CurrencyRate objects
 //     */
-//    public function findByExampleField($value): array
-//    {
+//    public function findByExampleField($value): array{
 //        return $this->createQueryBuilder('c')
 //            ->andWhere('c.exampleField = :val')
 //            ->setParameter('val', $value)
