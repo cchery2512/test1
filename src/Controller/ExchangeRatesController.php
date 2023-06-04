@@ -24,7 +24,8 @@ class ExchangeRatesController extends AbstractController{
         } catch (\InvalidArgumentException $e) {
             return new Response($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
-        $currencies     = $exchangesRatesCache->findByParams($validatedData);
+
+        $currencies     = $exchangesRatesCache->findByParams($validatedData, intval($this->getParameter('app.ttl_cache')));
         $formattedData  = array_map(fn(CurrencyRate $currency) => ExchangeRatesResource::format($currency), $currencies['data']);
         
         return new JsonResponse([
