@@ -72,13 +72,11 @@ class CurrencyRatesCommand extends Command{
 
         $formattedData  = $this->currencyRatesService->formatData($currencies['data']);
         
-        $datos = new JsonResponse([
+        /*$datos = new JsonResponse([
             'data' => $formattedData,
             'data_resource' => $currencies['data_source']
-        ]);
-
-        $io->success($datos);
-        
+        ]);*/
+        $io->success('Currency exchange rates obtained and stored correctly in the database and Redis.');
         return Command::SUCCESS;
     }
 }
