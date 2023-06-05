@@ -3,10 +3,9 @@
 namespace App\Controller;
 
 use App\Cache\ExchangeRatesCache;
-use App\Entity\CurrencyRate;
 use App\Repository\CurrencyRateRepository;
 use App\Request\ExchangeRatesRequest;
-use App\Resource\ExchangeRatesResource;
+use App\Service\CurrencyRatesService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -18,7 +17,14 @@ class ExchangeRatesController extends AbstractController{
 
     public function __construct(private CurrencyRateRepository $currencyRateRepository, private EntityManagerInterface $entityManager){}
 
-    public function index(Request $request, ExchangeRatesRequest $exchangeRatesRequest, ExchangeRatesCache $exchangesRatesCache): Response {
+    public function index(
+            Request $request, 
+            ExchangeRatesRequest $exchangeRatesRequest, 
+            ExchangeRatesCache $exchangesRatesCache,
+            CurrencyRatesService $service
+
+        ): Response 
+        {
         try {
             $validatedData = $exchangeRatesRequest->validated($request);
         } catch (\InvalidArgumentException $e) {
@@ -26,7 +32,8 @@ class ExchangeRatesController extends AbstractController{
         }
 
         $currencies     = $exchangesRatesCache->findByParams($validatedData, intval($this->getParameter('app.ttl_cache')));
-        $formattedData  = array_map(fn(CurrencyRate $currency) => ExchangeRatesResource::format($currency), $currencies['data']);
+        
+        $formattedData  = $service->formatData($currencies['data']);
         
         return new JsonResponse([
             'data' => $formattedData,
