@@ -6,10 +6,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\Validation;
 
-class ExchangeRatesRequest{
+class ExchangeRatesRequest
+{
 
-
-    public function validated(Request $request): array{
+    public function validated(Request $request): array
+    {
         $baseCurrency = $request->query->get('base_currency');
         $targetCurrencies = $request->query->get('target_currencies');
 

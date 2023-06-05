@@ -14,13 +14,16 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method CurrencyRate[]    findAll()
  * @method CurrencyRate[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class CurrencyRateRepository extends ServiceEntityRepository{
+class CurrencyRateRepository extends ServiceEntityRepository
+{
 
-    public function __construct(ManagerRegistry $registry){
+    public function __construct(ManagerRegistry $registry)
+    {
         parent::__construct($registry, CurrencyRate::class);
     }
 
-    public function save(CurrencyRate $entity, bool $flush = false): void{
+    public function save(CurrencyRate $entity, bool $flush = false): void
+    {
         $this->getEntityManager()->persist($entity);
 
         if ($flush) {
@@ -28,7 +31,8 @@ class CurrencyRateRepository extends ServiceEntityRepository{
         }
     }
 
-    public function remove(CurrencyRate $entity, bool $flush = false): void{
+    public function remove(CurrencyRate $entity, bool $flush = false): void
+    {
         $this->getEntityManager()->remove($entity);
 
         if ($flush) {
@@ -39,17 +43,19 @@ class CurrencyRateRepository extends ServiceEntityRepository{
     /**
      * @return CurrencyRate[] Returns an array of CurrencyRate objects
      */
-    public function findByParams($param): ?array{
+    public function findByParams($param): ?array
+    {
         return $this->createQueryBuilder('cr')
-        ->andWhere('cr.baseCurrency = :baseCurrency')
-        ->setParameter('baseCurrency', $param['base_currency'])
-        ->andWhere('cr.targetCurrency IN (:targetCurrencies)')
-        ->setParameter('targetCurrencies', $param['target_currencies'])
-        ->getQuery()
-        ->getResult();
+            ->andWhere('cr.baseCurrency = :baseCurrency')
+            ->setParameter('baseCurrency', $param['base_currency'])
+            ->andWhere('cr.targetCurrency IN (:targetCurrencies)')
+            ->setParameter('targetCurrencies', $param['target_currencies'])
+            ->getQuery()
+            ->getResult();
     }
 
-    public function updateOrCreate($data){
+    public function updateOrCreate($data)
+    {
         $entityManager = $this->getEntityManager();
         $entityManager->beginTransaction();
         $targetCurrencies = [];
@@ -61,20 +67,20 @@ class CurrencyRateRepository extends ServiceEntityRepository{
                     'baseCurrency' => $data['base'],
                     'targetCurrency' => $key,
                 ]);
-    
+
                 if (!$currencyRate) {
                     // Create a new instance of CurrencyRate if it doesn't exist
                     $currencyRate = new CurrencyRate();
                     $currencyRate->setBaseCurrency($data['base']);
                     $currencyRate->setTargetCurrency($key);
                     $currencyRate->setRate($value);
-                }else{
+                } else {
                     // If it exists in the database, update the values
                     $currencyRate->setBaseCurrency($data['base']);
                     $currencyRate->setTargetCurrency($key);
                     $currencyRate->setRate($value);
                 }
-    
+
                 // Persist the changes
                 $entityManager->persist($currencyRate);
                 $entityManager->flush();
@@ -84,7 +90,7 @@ class CurrencyRateRepository extends ServiceEntityRepository{
             $data['base_currency'] = $data['base'];
             $data['target_currencies'] = $targetCurrencies;
             return $data;
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             $entityManager->rollback();
             throw $e;
         }

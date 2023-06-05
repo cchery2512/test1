@@ -20,17 +20,19 @@ use Symfony\Component\HttpFoundation\JsonResponse;
     description: 'Fetches currency exchange rates from Open Exchange Rates API and stores them in MySQL and Redis.',
     hidden: false,
 )]
-class CurrencyRatesCommand extends Command{
+class CurrencyRatesCommand extends Command
+{
     private CurrencyRateRepository $currencyRateRepository;
     private ExchangeRatesCache $exchangesRatesCache;
     private CurrencyRatesService $currencyRatesService;
     private RequestService $requestService;
 
     public function __construct(
-        CurrencyRateRepository $currencyRateRepo, ExchangeRatesCache $exchangesRatesCach,
+        CurrencyRateRepository $currencyRateRepo,
+        ExchangeRatesCache $exchangesRatesCach,
         CurrencyRatesService $currencyRatesServic,
         RequestService $requestServic
-    ){
+    ) {
         $this->currencyRateRepository = $currencyRateRepo;
         $this->exchangesRatesCache = $exchangesRatesCach;
         $this->currencyRatesService = $currencyRatesServic;
@@ -38,40 +40,42 @@ class CurrencyRatesCommand extends Command{
 
         parent::__construct();
     }
-    
-    protected function configure(): void{
+
+    protected function configure(): void
+    {
         $this->addArgument('base_currency', InputArgument::REQUIRED, 'Base currency')
-        ->addArgument('target_currencies', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'Target currencies');
+            ->addArgument('target_currencies', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'Target currencies');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int{
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
         $io = new SymfonyStyle($input, $output);
 
         $status = $this->currencyRatesService->validateValues($input->getArgument('base_currency'));
-        if($status['status'] == false){
-            $io->error($status['message'].' Value => '. $input->getArgument('base_currency'));
+        if ($status['status'] == false) {
+            $io->error($status['message'] . ' Value => ' . $input->getArgument('base_currency'));
             return Command::INVALID;
         }
         $status = $this->currencyRatesService->validateValues($input->getArgument('target_currencies'));
-        if($status['status'] == false){
-            $io->error($status['message'].' Value => '. $input->getArgument('target_currencies'));
+        if ($status['status'] == false) {
+            $io->error($status['message'] . ' Value => ' . $input->getArgument('target_currencies'));
             return Command::INVALID;
         }
 
         $response = $this->requestService
-                        ->makeHttpRequest(
-                            $input->getArgument('base_currency'), 
-                            $input->getArgument('target_currencies')
-                        );
-        
+            ->makeHttpRequest(
+                $input->getArgument('base_currency'),
+                $input->getArgument('target_currencies')
+            );
+
         $response = (array) json_decode($response);
 
-        $result =$this->currencyRateRepository->updateOrCreate($response);
+        $result = $this->currencyRateRepository->updateOrCreate($response);
 
         $currencies     = $this->exchangesRatesCache->findByParams($result, intval($_ENV["TTL_CACHE"]));
 
         $formattedData  = $this->currencyRatesService->formatData($currencies['data']);
-        
+
         /*$datos = new JsonResponse([
             'data' => $formattedData,
             'data_resource' => $currencies['data_source']
