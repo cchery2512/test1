@@ -54,7 +54,7 @@ class CurrencyRateRepository extends ServiceEntityRepository{
         $entityManager->beginTransaction();
         $targetCurrencies = [];
         try {
-            // Buscar una instancia existente de CurrencyRate
+            // Find an existing instance of CurrencyRate
             foreach ($data['rates'] as $key => $value) {
                 array_push($targetCurrencies, $key);
                 $currencyRate = $this->findOneBy([
@@ -63,19 +63,19 @@ class CurrencyRateRepository extends ServiceEntityRepository{
                 ]);
     
                 if (!$currencyRate) {
-                    // Crear una nueva instancia de CurrencyRate
+                    // Create a new instance of CurrencyRate if it doesn't exist
                     $currencyRate = new CurrencyRate();
                     $currencyRate->setBaseCurrency($data['base']);
                     $currencyRate->setTargetCurrency($key);
                     $currencyRate->setRate($value);
                 }else{
-                    // Si existe en la base de datos se asignan los nuevos valores
+                    // If it exists in the database, update the values
                     $currencyRate->setBaseCurrency($data['base']);
                     $currencyRate->setTargetCurrency($key);
                     $currencyRate->setRate($value);
                 }
     
-                // Persistir los cambios
+                // Persist the changes
                 $entityManager->persist($currencyRate);
                 $entityManager->flush();
             }
