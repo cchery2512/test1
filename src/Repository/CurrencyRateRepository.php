@@ -76,8 +76,8 @@ class CurrencyRateRepository extends ServiceEntityRepository
                     $currencyRate->setRate($value);
                 } else {
                     // If it exists in the database, update the values
-                    $currencyRate->setBaseCurrency($data['base']);
-                    $currencyRate->setTargetCurrency($key);
+                    //$currencyRate->setBaseCurrency($data['base']);
+                    //$currencyRate->setTargetCurrency($key);
                     $currencyRate->setRate($value);
                 }
 
