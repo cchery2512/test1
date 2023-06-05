@@ -49,31 +49,44 @@ class CurrencyRateRepository extends ServiceEntityRepository{
         ->getResult();
     }
 
-    /*public function find(): array{
-        return $this->createQueryBuilder();
-    }*/
+    public function updateOrCreate($data){
+        $entityManager = $this->getEntityManager();
+        $entityManager->beginTransaction();
+        $targetCurrencies = [];
+        try {
+            // Buscar una instancia existente de CurrencyRate
+            foreach ($data['rates'] as $key => $value) {
+                array_push($targetCurrencies, $key);
+                $currencyRate = $this->findOneBy([
+                    'baseCurrency' => $data['base'],
+                    'targetCurrency' => $key,
+                ]);
+    
+                if (!$currencyRate) {
+                    // Crear una nueva instancia de CurrencyRate
+                    $currencyRate = new CurrencyRate();
+                    $currencyRate->setBaseCurrency($data['base']);
+                    $currencyRate->setTargetCurrency($key);
+                    $currencyRate->setRate($value);
+                }else{
+                    // Si existe en la base de datos se asignan los nuevos valores
+                    $currencyRate->setBaseCurrency($data['base']);
+                    $currencyRate->setTargetCurrency($key);
+                    $currencyRate->setRate($value);
+                }
+    
+                // Persistir los cambios
+                $entityManager->persist($currencyRate);
+                $entityManager->flush();
+            }
 
-//    /**
-//     * @return CurrencyRate[] Returns an array of CurrencyRate objects
-//     */
-//    public function findByExampleField($value): array{
-//        return $this->createQueryBuilder('c')
-//            ->andWhere('c.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('c.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
-
-//    public function findOneBySomeField($value): ?CurrencyRate
-//    {
-//        return $this->createQueryBuilder('c')
-//            ->andWhere('c.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+            $entityManager->commit();
+            $data['base_currency'] = $data['base'];
+            $data['target_currencies'] = $targetCurrencies;
+            return $data;
+        }catch (\Exception $e) {
+            $entityManager->rollback();
+            throw $e;
+        }
+    }
 }

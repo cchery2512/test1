@@ -2,7 +2,14 @@
 
 namespace App\Command;
 
+use App\Cache\ExchangeRatesCache;
+use App\Entity\CurrencyRate;
+use App\Repository\CurrencyRateRepository;
 use App\Request\ExchangeRatesRequest;
+use App\Resource\ExchangeRatesResource;
+use Doctrine\ORM\EntityManagerInterface;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -10,6 +17,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 #[AsCommand(
     name: 'app:currency:rates',
@@ -17,6 +26,14 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     hidden: false,
 )]
 class CurrencyRatesCommand extends Command{
+    private $currencyRateRepository;
+    private $exchangesRatesCache;
+    public function __construct(private CurrencyRateRepository $currencyRateRepo, ExchangeRatesCache $exchangesRatesCach){
+        $this->currencyRateRepository = $currencyRateRepo;
+        $this->exchangesRatesCache = $exchangesRatesCach;
+        parent::__construct();
+    }
+    
     protected function configure(): void{
         $this
         //->setName('app:currency:rates')
@@ -29,36 +46,44 @@ class CurrencyRatesCommand extends Command{
         $io = new SymfonyStyle($input, $output);
 
         $status = $this->validateValues($input->getArgument('base_currency'));
-        if($status['status'] == false) $io->error($status['message']. $input->getArgument('base_currency'));
+        if($status['status'] == false){
+            $io->error($status['message'].' Value => '. $input->getArgument('base_currency'));
+            return Command::INVALID;
+        }
         $status = $this->validateValues($input->getArgument('target_currencies'));
-        if($status['status'] == false) $io->error($status['message']. $input->getArgument('base_currency'));
-        /*$arg1 = $input->getArgument('arg1');
-
-        if ($arg1) {
-            $io->note(sprintf('You passed an argument: %s', $arg1));
+        if($status['status'] == false){
+            $io->error($status['message'].' Value => '. $input->getArgument('target_currencies'));
+            return Command::INVALID;
         }
 
-        if ($input->getOption('option1')) {
-            // ...
-        }*/
-        $io->error('Currency exchange rates fetched and stored successfully.'. $input);
-        //$io->fail('Currency exchange rates fetched and stored successfully.'. gettype($input->getArgument('target_currencies')));
+        $response = $this->makeHttpRequest($input->getArgument('base_currency'), $input->getArgument('target_currencies'));
+        
+        $response = (array)json_decode($response);
+
+        //dd($response);
+
+        $result =$this->currencyRateRepository->updateOrCreate($response);
+
+        $currencies     = $this->exchangesRatesCache->findByParams($result, intval($_ENV["TTL_CACHE"]));
+        $formattedData  = array_map(fn(CurrencyRate $currency) => ExchangeRatesResource::format($currency), $currencies['data']);
+        
+        $datos = new JsonResponse([
+            'data' => $formattedData,
+            'data_resource' => $currencies['data_source']
+        ]);
+
+        $io->success($datos);
+        // if($cadena->getStatusCode() === 200){
+        //     $cadena = $cadena->json();
+        //     //$cadena = json_encode($cadena, true);
+        //     //$this->currencyRateRepository->updateOrCreate($cadena);
+        //     //dd(gettype($cadena));
+        //     $io->success($cadena);
+        // }else{
+        //     $io->error($cadena->getStatusCode());
+        //     return Command::INVALID;
+        // }
         return Command::SUCCESS;
-        /*$baseCurrency = $input->getArgument('base_currency');
-        $targetCurrencies = $input->getArgument('target_currencies');
-
-        // Obtener los tipos de cambio de la API de Open Exchange Rates
-        $exchangeRates = $this->fetchExchangeRates($baseCurrency, $targetCurrencies);
-
-        // Guardar los tipos de cambio en la base de datos MySQL
-        $this->saveToMySQL($exchangeRates);
-
-        // Guardar los tipos de cambio en Redis
-        $this->saveToRedis($exchangeRates);*/
-
-       // $output->writeln('Currency exchange rates fetched and stored successfully.');
-
-        //return Command::SUCCESS;
     }
 
 
@@ -70,6 +95,10 @@ class CurrencyRatesCommand extends Command{
                     return $result;
                 }
             }
+            return [
+                'message'   => '',
+                'status'    => true
+            ];
         } else {
             return $this->validateSingleValue($values);
         }
@@ -94,6 +123,37 @@ class CurrencyRatesCommand extends Command{
             'message'   => $message,
             'status'    => $status
         ];
+    }
+
+
+    function makeHttpRequest(string $baseCurrency, array $targetCurrencies) {
+        $url = 'https://openexchangerates.org/api/latest.json';
+        $appId = '0fb6b31eeb2d4ed5a7281011d6ca9837';
+        $symbols = implode(',', $targetCurrencies);
+        $queryParams = http_build_query([
+            'app_id' => $appId,
+            'base' => $baseCurrency,
+            'symbols' => $symbols,
+        ]);
+    
+        $apiUrl = $url . '?' . $queryParams;
+    
+        $client = new Client();
+    
+        try {
+            $response = $client->get($apiUrl);
+            $statusCode = $response->getStatusCode();
+            $body = $response->getBody()->getContents();
+            
+            return $body;
+            if ($statusCode === 200) {
+                return new Response($body);
+            } else {
+                return new Response($body, $statusCode);
+            }
+        } catch (GuzzleException $e) {
+            return new Response('Error: ' . $e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
     }
     
 }
