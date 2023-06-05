@@ -35,10 +35,7 @@ class CurrencyRatesCommand extends Command{
     }
     
     protected function configure(): void{
-        $this
-        //->setName('app:currency:rates')
-        //->setDescription('Fetches currency exchange rates from Open Exchange Rates API and stores them in MySQL and Redis.')
-        ->addArgument('base_currency', InputArgument::REQUIRED, 'Base currency')
+        $this->addArgument('base_currency', InputArgument::REQUIRED, 'Base currency')
         ->addArgument('target_currencies', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'Target currencies');
     }
 
@@ -142,15 +139,14 @@ class CurrencyRatesCommand extends Command{
     
         try {
             $response = $client->get($apiUrl);
-            $statusCode = $response->getStatusCode();
+            //$statusCode = $response->getStatusCode();
             $body = $response->getBody()->getContents();
-            
             return $body;
-            if ($statusCode === 200) {
+            /*if ($statusCode === 200) {
                 return new Response($body);
             } else {
                 return new Response($body, $statusCode);
-            }
+            }*/
         } catch (GuzzleException $e) {
             return new Response('Error: ' . $e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
