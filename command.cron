@@ -1,0 +1,2 @@
+MAILTO="mymail@example.com"
+* * * * * php /Users/carmelochery/Desktop/symfony/test1/bin/console app:currency:rates EUR USD GBP ARS MXN PAB COL CRC COP AED BRL >>  /Users/carmelochery/Desktop/symfony/test1/log/cron.log 2>&1

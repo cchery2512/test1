@@ -46,3 +46,10 @@ hooks:
         set -x -e
 
         symfony-deploy
+
+crons:
+    snapshot:
+        spec: * * * * *
+        cmd: |
+            croncape php bin/console app:currency:rates EUR USD GBP ARS MXN PAB COL CRC COP AED BRL
+
