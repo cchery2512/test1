@@ -40,10 +40,12 @@ class RequestService
         try {
             $response = $client->get($apiUrl);
             $body = $response->getBody()->getContents();
-
-            return $body;
+            $status = $response->getStatusCode();
+        
+            return $status === 200 || $status === 202 ? $body : '';
         } catch (GuzzleException $e) {
-            return new Response('Error: ' . $e->getMessage(), Response::HTTP_BAD_REQUEST);
+            //return new Response('Error: ' . $e->getMessage(), Response::HTTP_BAD_REQUEST);
+            return '';
         }
     }
 }

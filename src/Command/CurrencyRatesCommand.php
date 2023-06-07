@@ -68,13 +68,19 @@ class CurrencyRatesCommand extends Command
                 $input->getArgument('target_currencies')
             );
 
-        $response = (array) json_decode($response);
+        if($response !== ''){
+            $response = (array) json_decode($response);
+        }else{
+            $io->error('Error when querying the API');
+            return Command::INVALID;
+        }
+        
 
         $result = $this->currencyRateRepository->updateOrCreate($response);
 
         $currencies     = $this->exchangesRatesCache->findByParams($result, intval($_ENV["TTL_CACHE"]));
 
-        $formattedData  = $this->currencyRatesService->formatData($currencies['data']);
+        //$formattedData  = $this->currencyRatesService->formatData($currencies['data']);
 
         /*$datos = new JsonResponse([
             'data' => $formattedData,
