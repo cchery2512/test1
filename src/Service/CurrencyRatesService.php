@@ -39,14 +39,19 @@ class CurrencyRatesService
         $message = '';
         // Verificar que el valor sea una cadena de longitud 3
         if (strlen($value) !== 3 || !ctype_upper($value)) {
-            if (strlen($value) !== 3) {
-                $message .= 'Todos los valores deben ser cadenas de longitud 3.';
+            if(strlen($value) === 0){
+                $message .= 'Not enough arguments (missing: "target_currencies").';
+            }else{
+                if (strlen($value) !== 3) {
+                    $message .= 'All values ​​must be strings of length 3.';
+                }
+    
+                // Verificar que el valor esté compuesto únicamente por letras mayúsculas
+                if (!ctype_upper($value)) {
+                    $message .= 'All values ​​must be uppercase letters.';
+                }
             }
 
-            // Verificar que el valor esté compuesto únicamente por letras mayúsculas
-            if (!ctype_upper($value)) {
-                $message .= 'Todos los valores deben ser letras mayúsculas.';
-            }
             $status = false;
         }
         return [

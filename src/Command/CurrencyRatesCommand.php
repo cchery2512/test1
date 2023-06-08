@@ -51,6 +51,12 @@ class CurrencyRatesCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
+        //$status = $this->currencyRatesService->validateValues($input->getArgument('target_currencies'));
+        if (!$input->getArgument('base_currency') && !$input->getArgument('target_currencies')) {
+            $io->error('Not enough arguments (missing: "base_currency, target_currencies").');
+            return Command::INVALID;
+        }
+
         $status = $this->currencyRatesService->validateValues($input->getArgument('base_currency'));
         if ($status['status'] == false) {
             $io->error($status['message'] . ' Value => ' . $input->getArgument('base_currency'));
@@ -62,19 +68,24 @@ class CurrencyRatesCommand extends Command
             return Command::INVALID;
         }
 
+ 
+
         $response = $this->requestService
             ->makeHttpRequest(
                 $input->getArgument('base_currency'),
                 $input->getArgument('target_currencies')
             );
-
+        
         if($response !== ''){
             $response = (array) json_decode($response);
+            if(json_encode($response['rates']) == '{}'){
+                $io->error('The API did not return target_currencies for the entered base_currency, please check your inputs.');
+                return Command::INVALID;
+            }
         }else{
             $io->error('Error when querying the API');
             return Command::INVALID;
         }
-        
 
         $result = $this->currencyRateRepository->updateOrCreate($response);
 

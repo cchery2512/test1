@@ -1,1 +1,1 @@
-* * * * * cd [PROYECT_ROUTE] php bin/console app:currency:rates EUR USD GBP ARS MXN PAB COL CRC COP AED BRL >> chmod +w [PROYECT_ROUTE]/log/cron.log 2>&1
+0 1 * * * cd [PROYECT_ROUTE] php bin/console app:currency:rates EUR USD GBP ARS MXN PAB COL CRC COP AED BRL >> chmod +w [PROYECT_ROUTE]/log/cron.log 2>&1

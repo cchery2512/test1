@@ -15,11 +15,11 @@ class ExchangeRatesRequest
         $targetCurrencies = $request->query->get('target_currencies');
 
         if (!$baseCurrency) {
-            throw new \InvalidArgumentException('Missing base_currency parameter: base_currency');
+            throw new \InvalidArgumentException('Missing parameter: base_currency');
         }
 
         if (!$targetCurrencies) {
-            throw new \InvalidArgumentException('Missing target_currencies parameter: target_currencies');
+            throw new \InvalidArgumentException('Missing parameter: target_currencies');
         }
 
         $requestData = [

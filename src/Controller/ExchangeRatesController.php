@@ -30,7 +30,7 @@ class ExchangeRatesController extends AbstractController
         try {
             $validatedData = $exchangeRatesRequest->validated($request);
         } catch (\InvalidArgumentException $e) {
-            return new JsonResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(["message" => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
 
         $currencies     = $exchangesRatesCache->findByParams($validatedData, intval($this->getParameter('app.ttl_cache')));
