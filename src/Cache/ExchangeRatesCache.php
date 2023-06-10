@@ -14,7 +14,11 @@ class ExchangeRatesCache{
     }
 
     public function findByParams(array $validatedData, int $ttl_cache): ?array{
-        $cacheKey       = "find-by-params-" . md5(json_encode($validatedData));
+        $array = (array) $validatedData['target_currencies'];
+        sort($array);
+        $stringFormatValidatedData = "base_currency=" . $validatedData['base_currency'] . "_target_currencies=" . implode(',', $array);
+        $cacheKey       = "find-by-params-" . $stringFormatValidatedData;
+        
         $isHit = $this->cache->getItem($cacheKey)->isHit() ? 'redis/cache' : 'mysql';
 
         $data = $this->cache->get($cacheKey, function(ItemInterface $item) use($validatedData, $ttl_cache){

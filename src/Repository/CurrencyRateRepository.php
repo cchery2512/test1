@@ -87,9 +87,10 @@ class CurrencyRateRepository extends ServiceEntityRepository
             }
 
             $entityManager->commit();
-            $data['base_currency'] = $data['base'];
-            $data['target_currencies'] = $targetCurrencies;
-            return $data;
+            return [
+                'base_currency'     => $data['base'],
+                'target_currencies' => $targetCurrencies
+            ];
         } catch (\Exception $e) {
             $entityManager->rollback();
             throw $e;
