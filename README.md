@@ -17,7 +17,7 @@
 ## Example
 - Run command: docker-compose exec web php bin/console app:currency:rates EUR USD GBP ARS MXN PAB COL CRC COP AED BRL
 
-## The CRON JOB is defined in the line 31 of the /docker-config/Dockerfile
+## The CRON JOB is defined in the line 33 of the /docker-config/Dockerfile
 
 ### Run the 'exchange-rates' API
 
