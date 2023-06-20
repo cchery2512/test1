@@ -20,7 +20,7 @@ services:
     container_name: web
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: ./docker-config/Dockerfile
     ports:
       - '14000:80'
     depends_on:

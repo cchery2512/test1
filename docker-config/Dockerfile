@@ -13,7 +13,7 @@ RUN apt-get update && \
     docker-php-ext-install pdo pdo_mysql
 
 # Configuramos Apache
-COPY my-apache.conf /etc/apache2/sites-available/000-default.conf
+COPY ./docker-config/my-apache.conf /etc/apache2/sites-available/000-default.conf
 RUN a2enmod rewrite && \
     service apache2 restart
 
@@ -33,10 +33,10 @@ RUN composer install
 RUN (crontab -l ; echo "0 1 * * * cd /var/www/html && /usr/local/bin/php bin/console app:currency:rates EUR USD GBP ARS MXN PAB COL CRC COP AED BRL") | crontab
 
 # The entry point execution permission
-RUN chmod +x entrypoint.sh
+RUN chmod +x ./docker-config/entrypoint.sh
 
 # The default entry point command
 CMD ["apache2-foreground"]
 
 # Executes every time the project is started
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["./docker-config/entrypoint.sh"]
