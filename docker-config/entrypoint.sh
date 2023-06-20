@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
 
+composer install
+
 ATTEMPTS=60
 until [ $ATTEMPTS -eq 0 ] || php bin/console dbal:run-sql -q "SELECT 1" >/dev/null 2>&1; do
   sleep 1
