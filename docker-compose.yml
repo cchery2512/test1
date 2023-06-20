@@ -18,8 +18,9 @@ services:
       - '12345:6379'
   web:
     container_name: web
-    #build: ./docker-config
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - '14000:80'
     depends_on:

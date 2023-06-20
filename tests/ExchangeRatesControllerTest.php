@@ -67,12 +67,9 @@ class ExchangeRatesControllerTest extends ApiTestCase
     {
         $response = static::createClient();
         $response->request('GET', '/api/exchange-rates?base_currency=EUA&target_currencies=USD');
-        $this->assertResponseIsSuccessful();
+        $this->assertResponseStatusCodeSame(400);
 
-        $this->assertJsonContains([
-            "data" => [],
-            "data_resource" => "mysql"
-        ]);
+        $this->assertJsonContains(['message' => 'The API did not return target_currencies for the entered base_currency, please check your inputs.']);
     }
 
 }

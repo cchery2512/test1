@@ -2,17 +2,10 @@
 
 - Install Docker
 
-- Install PHP >=8.1
+## For run the application write this command in the console:
+- docker-compose build && docker-compose up -d
 
-- Install the symfony-cli
-
-- Run command: composer install
-
-- Run command: docker-compose up -d (for up the mysql and redis services)
-
-- For get the port numbers of the mysql and redis services you can put the command: docker-compose ps
-
-- Run command: symfony server:start
+## Important: the port of the application is the 14000 => http://127.0.0.1:14000
 
 ### CurrencyRatesCommand
 ## Description
@@ -22,32 +15,37 @@
 - app:currency:rate [base_currency] [target_currency_1] [target_currency_2] ... [target_currency_n]
 
 ## Example
-- Run command: php bin/console app:currency:rates EUR USD GBP
+- Run command: docker-compose exec web php bin/console app:currency:rates EUR USD GBP ARS MXN PAB COL CRC COP AED BRL
 
-## How the cron job was defined
-- First we open the crontab file for editing with the command: crontab -e
-- And then we write: 0 1 * * * cd [PROJECT_ROUTE] php bin/console app:currency:rates [base_currency] [target_currency_1] [target_currency_2] ... [target_currency_n] >> chmod +w [PROJECT_ROUTE]/log/cron.log 2>&1
-- The values ​​of: ['PROJECT_ROUTE'], ['base_currency'] and ['target_currency_#'] must be replaced by those corresponding to their respective equipment or needs
+## The CRON JOB is defined in the line 31 of the Dockerfile
 
 ### Run the 'exchange-rates' API
 
+## **UPDATE**
+- If the input values ​​are correct but the data is not found in the database, it will proceed to consult directly from the https://openexchangerates.org api and once the information is obtained it will be stored in the database. 
+
 ## Description
 - We can get the base of our currency in other currencies fron the database or redis/cache
+
+- In the event that the input values ​​are incorrect (for example, they enter a target_currency that does not exist) a BAD REQUEST error message will be returned.
 
 ## signature
 - GET /api/exchange-rates=[base_currency]&target_currencies=[target_currency_1,target_currency_2,...,target_currency_n]
 
 ## Example
-- Put in you postman: http://127.0.0.1:8000/api/exchange-rates?base_currency=EUR&target_currencies=USD,GBP in GET
-
-### Before run unit test you going to need
-## create the test database
-- php bin/console --env=test doctrine:database:create
-
-## create the tables/columns in the test database
-- php bin/console --env=test doctrine:schema:create
-
-- Empty the database and reload all the fixture classes with: php bin/console --env=test doctrine:fixtures:load
+- Put in you postman: http://127.0.0.1:14000/api/exchange-rates?base_currency=EUR&target_currencies=USD,GBP in GET
 
 ## Run all unit test of the application
-- php bin/phpunit
+- docker-compose exec web php bin/phpunit
+
+### Connection to the database outside of docker (with fixed ports)
+
+## The credentials are:
+- user:     root
+- pasword:  password
+- database: main
+- host:     localhost
+- port:     3307
+
+## Note:
+- If you have problems with the connections permisions you can add this param at the connection URL: ?allowPublicKeyRetrieval=true&useSSL=false

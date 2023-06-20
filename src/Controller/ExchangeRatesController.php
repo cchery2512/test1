@@ -34,12 +34,15 @@ class ExchangeRatesController extends AbstractController
         }
 
         $currencies     = $exchangesRatesCache->findByParams($validatedData, intval($this->getParameter('app.ttl_cache')));
-
-        $formattedData  = $service->formatData($currencies['data']);
-
-        return new JsonResponse([
-            'data' => $formattedData,
-            'data_resource' => $currencies['data_source']
-        ]);
+        
+        if(count($currencies['data']) == 0){
+            return new JsonResponse(["message" => 'The API did not return target_currencies for the entered base_currency, please check your inputs.'], Response::HTTP_BAD_REQUEST);
+        }else{
+            $formattedData  = $service->formatData($currencies['data']);
+            return new JsonResponse([
+                'data' => $formattedData,
+                'data_resource' => $currencies['data_source']
+            ]);
+        }
     }
 }

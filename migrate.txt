@@ -1,8 +1,0 @@
-//For run write this command in the console:
-docker-compose build && docker-compose up -d
-
-command (corriendo):
-docker-compose exec web php bin/console app:currency:rates EUR USD GBP ARS MXN PAB COL CRC COP AED BRL
-
-//Después de eso debería poder ejecutarse el siguiente comando sin problemas (corriendo):
-docker-compose exec web php bin/phpunit

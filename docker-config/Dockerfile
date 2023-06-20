@@ -22,13 +22,15 @@ RUN chown -R www-data:www-data /var/www/html && \
     chmod -R 755 /var/www/html
 
 # Instalación de Composer
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
+    php composer-setup.php --install-dir=/usr/bin --filename=composer && \
+    php -r "unlink('composer-setup.php');"
 
 # Ejecución de Composer
 RUN composer install
 
 # Configuración de cron para ejecutar el comando de Symfony cada minuto
-RUN (crontab -l ; echo "* * * * * cd /var/www/html && /usr/local/bin/php bin/console app:currency:rates EUR USD GBP ARS MXN PAB COL CRC COP AED BRL") | crontab
+RUN (crontab -l ; echo "0 1 * * * cd /var/www/html && /usr/local/bin/php bin/console app:currency:rates EUR USD GBP ARS MXN PAB COL CRC COP AED BRL") | crontab
 
 # The entry point execution permission
 RUN chmod +x entrypoint.sh
