@@ -29,7 +29,7 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" &&
 # Run Composer
 RUN composer install
 
-# Configure cron to run the Symfony command every minute
+# Configure cron to run the Symfony command for execute every day at 1:00 a.m.
 RUN (crontab -l ; echo "0 1 * * * cd /var/www/html && /usr/local/bin/php bin/console app:currency:rates EUR USD GBP ARS MXN PAB COL CRC COP AED BRL") | crontab
 
 # Set execution permission for the entrypoint script
