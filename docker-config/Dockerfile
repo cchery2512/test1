@@ -4,13 +4,15 @@ FROM php:8.2-apache
 # Set the working directory
 WORKDIR /var/www/html
 
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
 # Copy the contents of our project to the working directory
 COPY . .
 
 # Install necessary dependencies
 RUN apt-get update && \
-    apt-get install -y cron libpq-dev && \
-    docker-php-ext-install pdo pdo_mysql
+    apt-get install -y cron libpq-dev zlib1g-dev libzip-dev unzip && \
+    docker-php-ext-install pdo pdo_mysql zip
 
 # Configure Apache
 COPY ./docker-config/my-apache.conf /etc/apache2/sites-available/000-default.conf
