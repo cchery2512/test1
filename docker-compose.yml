@@ -2,17 +2,31 @@ version: '3'
 
 services:
   database:
+    container_name: database
     image: 'mysql:8.0'
     volumes:
-      - ./mysql:/var/lib/mysql
+      - database_data:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: main
     ports:
       - '3307:3306'
   redis:
-    image: redis:7.0.0
+    container_name: redis
+    image: 'redis:latest'
     ports:
-      - 12345:6379
+      - '12345:6379'
+  web:
+    container_name: web
+    #build: ./docker-config
+    build: .
+    ports:
+      - '14000:80'
+    depends_on:
+      - database
+      - redis
+    volumes:
+      - .:/var/www/html
+
 volumes:
   database_data:
